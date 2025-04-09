@@ -1,5 +1,7 @@
+import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_insta_clone/bloc/post/post_bloc.dart';
 import 'package:flutter_insta_clone/bloc/post/post_events.dart';
@@ -35,23 +37,54 @@ class _NewPostState extends State<NewPost> {
   }
 
   Future<void> getPermissions() async {
-    final bool photoPermissionGranted =
-        await PermissionService.requestPermission(Permission.photos);
-    final bool videoPermissionGranted =
-        await PermissionService.requestPermission(Permission.videos);
-    final bool cameraPermissionGranted =
-        await PermissionService.requestPermission(Permission.camera);
-    if (photoPermissionGranted &&
-        videoPermissionGranted &&
-        cameraPermissionGranted) {
-      // All permissions granted
-      print('All permissions granted');
+    bool photoPermissionGranted = false;
+    bool videoPermissionGranted = false;
+    bool storagePermissionGranted = false;
+    bool cameraPermissionGranted = false;
+    if (Platform.isAndroid) {
+      var androidInfo = await DeviceInfoPlugin().androidInfo;
+      if (androidInfo.version.sdkInt >= 33) {
+        // Request permissions for Android 13 and above
+        photoPermissionGranted =
+            await PermissionService.requestPermission(
+              Permission.photos,
+            );
+        videoPermissionGranted =
+            await PermissionService.requestPermission(
+              Permission.videos,
+            );
+        cameraPermissionGranted =
+            await PermissionService.requestPermission(
+              Permission.camera,
+            );
+        setState(() {
+          isPermissionGranted =
+              photoPermissionGranted &&
+              videoPermissionGranted &&
+              cameraPermissionGranted;
+        });
+      } else {
+        // Request permissions for Android 12 and below
+        storagePermissionGranted =
+            await PermissionService.requestPermission(
+              Permission.storage,
+            );
+        cameraPermissionGranted =
+            await PermissionService.requestPermission(
+              Permission.camera,
+            );
+        setState(() {
+          isPermissionGranted =
+              storagePermissionGranted && cameraPermissionGranted;
+        });
+      }
+    } else if (Platform.isIOS) {
+      photoPermissionGranted =
+          await PermissionService.requestPermission(
+            Permission.photos,
+          );
       setState(() {
-        isPermissionGranted = true;
-      });
-    } else {
-      setState(() {
-        isPermissionGranted = false;
+        isPermissionGranted = photoPermissionGranted;
       });
     }
   }
