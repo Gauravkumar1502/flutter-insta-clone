@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_insta_clone/services/permission_service.dart';
+import 'package:flutter_insta_clone/widgets/photo_manager_widget.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class NewPost extends StatefulWidget {
@@ -10,15 +11,33 @@ class NewPost extends StatefulWidget {
 }
 
 class _NewPostState extends State<NewPost> {
+  bool isPermissionGranted = false;
   @override
-  void initState() async {
+  void initState() {
     super.initState();
-    final bool photoPermission =
+    getPermissions();
+  }
+
+  Future<void> getPermissions() async {
+    final bool photoPermissionGranted =
         await PermissionService.requestPermission(Permission.photos);
-    final bool cameraPermission =
-        await PermissionService.requestPermission(Permission.camera);
-    final bool videoPermission =
+    final bool videoPermissionGranted =
         await PermissionService.requestPermission(Permission.videos);
+    final bool cameraPermissionGranted =
+        await PermissionService.requestPermission(Permission.camera);
+    if (photoPermissionGranted &&
+        videoPermissionGranted &&
+        cameraPermissionGranted) {
+      // All permissions granted
+      print('All permissions granted');
+      setState(() {
+        isPermissionGranted = true;
+      });
+    } else {
+      setState(() {
+        isPermissionGranted = false;
+      });
+    }
   }
 
   @override
@@ -43,6 +62,14 @@ class _NewPostState extends State<NewPost> {
                     child: Image.network(
                       'https://picsum.photos/300/300',
                       fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return const Center(
+                          child: Text(
+                            'Error loading image',
+                            style: TextStyle(color: Colors.red),
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ),
@@ -50,13 +77,10 @@ class _NewPostState extends State<NewPost> {
             ),
             Expanded(
               flex: 2,
-              child: Text(
-                'Create a new post',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w400,
-                ),
-              ),
+              child:
+                  isPermissionGranted
+                      ? PhotoManagerWidget()
+                      : Text("Permissions not granted"),
             ),
             Padding(
               padding: const EdgeInsets.all(8.0),
