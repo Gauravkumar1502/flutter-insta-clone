@@ -23,7 +23,7 @@ class _PhotoManagerWidgetState extends State<PhotoManagerWidget> {
     'videos': 0,
   };
   String selectedTab = 'recent';
-  List<String> selectedAssetsId = [];
+  List<AssetEntity> selectedAssets = [];
 
   bool isLoading = false;
   bool isError = false;
@@ -208,14 +208,14 @@ class _PhotoManagerWidgetState extends State<PhotoManagerWidget> {
                     mediaMap[selectedTab]![index];
                 return MediaThumbnail(
                   asset: asset,
-                  isSelected: selectedAssetsId.contains(asset.id),
+                  isSelected: selectedAssets.contains(asset),
                   onTap: () {
                     debugPrint('Selected Asset ID: ${asset.id}');
                     setState(() {
-                      if (selectedAssetsId.contains(asset.id)) {
-                        selectedAssetsId.remove(asset.id);
+                      if (selectedAssets.contains(asset)) {
+                        selectedAssets.remove(asset);
                       } else {
-                        selectedAssetsId.add(asset.id);
+                        selectedAssets.add(asset);
                       }
                     });
                   },
