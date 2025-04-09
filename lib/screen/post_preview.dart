@@ -5,6 +5,7 @@ import 'package:flutter_insta_clone/models/media_model.dart';
 import 'package:flutter_insta_clone/models/post_model.dart';
 import 'package:video_player/video_player.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image/image.dart' as img;
 
 class MediaEditScreen extends StatefulWidget {
   final List<Media> selectedMedia;
@@ -74,6 +75,40 @@ class _MediaEditScreenState extends State<MediaEditScreen> {
     }
   }
 
+  void _applyFilter(int filterIndex) {
+    debugPrint(
+      'Applying filter $filterIndex to image at index $_currentPage',
+    );
+    img.Image? image = img.decodeImage(
+      widget.selectedMedia[_currentPage].file,
+    );
+
+    if (image == null) return;
+
+    if (filterIndex == 0) {
+      return;
+    } else if (filterIndex == 1) {
+      image = img.grayscale(image);
+    } else if (filterIndex == 2) {
+      image = img.sepia(image);
+    } else if (filterIndex == 3) {
+      image = img.billboard(image);
+    } else if (filterIndex == 4) {
+      image = img.bleachBypass(image);
+    } else if (filterIndex == 5) {
+      image = img.chromaticAberration(image);
+    }
+    final filteredBytes = img.encodeJpg(image);
+    setState(() {
+      widget.selectedMedia[_currentPage] = Media(
+        id: widget.selectedMedia[_currentPage].id,
+        type: widget.selectedMedia[_currentPage].type,
+        file: filteredBytes,
+        extension: widget.selectedMedia[_currentPage].extension,
+      );
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -83,11 +118,13 @@ class _MediaEditScreenState extends State<MediaEditScreen> {
           padding: const EdgeInsets.all(8.0),
           child: Column(
             children: [
-              // Media preview takes most of the screen
               Expanded(
-                flex: 3,
                 child: PageView.builder(
                   controller: _pageController,
+                  onPageChanged:
+                      (value) => setState(() {
+                        _currentPage = value;
+                      }),
                   itemCount: widget.selectedMedia.length,
                   itemBuilder: (context, index) {
                     final media = widget.selectedMedia[index];
@@ -146,18 +183,22 @@ class _MediaEditScreenState extends State<MediaEditScreen> {
                 child: SizedBox(
                   height: 80,
                   child: ListView.builder(
-                    itemCount: 5,
+                    itemCount: 6,
                     scrollDirection: Axis.horizontal,
                     physics: const BouncingScrollPhysics(),
                     itemBuilder: (context, index) {
                       return TextButton(
-                        onPressed: () {},
+                        onPressed: () => _applyFilter(index),
                         child: Column(
                           children: [
                             CircleAvatar(
                               child: Icon(Icons.filter, size: 24),
                             ),
-                            Text('Filter ${index + 1}'),
+                            Text(
+                              index == 0
+                                  ? 'No Filter'
+                                  : 'Filter $index',
+                            ),
                           ],
                         ),
                       );
