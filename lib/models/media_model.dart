@@ -1,4 +1,7 @@
+import 'dart:io';
 import 'dart:typed_data';
+
+import 'package:path_provider/path_provider.dart';
 
 class Media {
   final String id;
@@ -23,6 +26,15 @@ class Media {
 
   bool get isVideo =>
       ['mp4', 'mov', 'avi', 'mkv'].contains(extension.toLowerCase());
+
+  Future<File> toFile({String? fileName}) async {
+    final tempDir = await getTemporaryDirectory();
+    final path = '${tempDir.path}/${fileName ?? '$id.$extension'}';
+
+    final mediaFile = File(path);
+    await mediaFile.writeAsBytes(file);
+    return mediaFile;
+  }
 }
 
 enum MediaType { image, video }
