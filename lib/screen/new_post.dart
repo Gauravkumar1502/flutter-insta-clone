@@ -7,11 +7,11 @@ import 'package:flutter_insta_clone/bloc/post/post_bloc.dart';
 import 'package:flutter_insta_clone/bloc/post/post_events.dart';
 import 'package:flutter_insta_clone/models/media_model.dart';
 import 'package:flutter_insta_clone/models/post_model.dart';
+import 'package:flutter_insta_clone/screen/post_preview.dart';
 import 'package:flutter_insta_clone/services/permission_service.dart';
 import 'package:flutter_insta_clone/widgets/photo_manager_widget.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_manager/photo_manager.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 
 class NewPost extends StatefulWidget {
   const NewPost({super.key});
@@ -116,25 +116,17 @@ class _NewPostState extends State<NewPost> {
                   );
                 }).toList(),
               );
+
               if (mounted) {
-                context.read<PostBloc>().add(
-                  AddPostEvent(
-                    post: Post(
-                      id:
-                          DateTime.now().millisecondsSinceEpoch
-                              .toString(),
-                      media: mediaList,
-                      createdAt: DateTime.now(),
-                    ),
+                // Navigate to edit screen instead of immediately creating post
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder:
+                        (context) =>
+                            MediaEditScreen(selectedMedia: mediaList),
                   ),
                 );
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Post added successfully'),
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                );
-                Navigator.pop(context);
               }
             },
           ),
