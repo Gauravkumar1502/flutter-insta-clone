@@ -9,7 +9,6 @@ import 'package:image/image.dart' as img;
 
 class MediaEditScreen extends StatefulWidget {
   final List<Media> selectedMedia;
-
   const MediaEditScreen({super.key, required this.selectedMedia});
 
   @override
@@ -17,6 +16,7 @@ class MediaEditScreen extends StatefulWidget {
 }
 
 class _MediaEditScreenState extends State<MediaEditScreen> {
+  List<Media> modifiedMedia = [];
   late PageController _pageController;
   int _currentPage = 0;
   Map<String, VideoPlayerController> _videoControllers = {};
@@ -27,6 +27,17 @@ class _MediaEditScreenState extends State<MediaEditScreen> {
     _pageController = PageController(initialPage: 0);
     _pageController.addListener(_onPageChanged);
     _initializeControllers();
+    modifiedMedia =
+        widget.selectedMedia
+            .map(
+              (media) => Media(
+                id: media.id,
+                type: media.type,
+                file: media.file, // working copy
+                extension: media.extension,
+              ),
+            )
+            .toList();
   }
 
   @override
@@ -85,9 +96,7 @@ class _MediaEditScreenState extends State<MediaEditScreen> {
 
     if (image == null) return;
 
-    if (filterIndex == 0) {
-      return;
-    } else if (filterIndex == 1) {
+    if (filterIndex == 1) {
       image = img.grayscale(image);
     } else if (filterIndex == 2) {
       image = img.sepia(image);
@@ -100,10 +109,13 @@ class _MediaEditScreenState extends State<MediaEditScreen> {
     }
     final filteredBytes = img.encodeJpg(image);
     setState(() {
-      widget.selectedMedia[_currentPage] = Media(
+      modifiedMedia[_currentPage] = Media(
         id: widget.selectedMedia[_currentPage].id,
         type: widget.selectedMedia[_currentPage].type,
-        file: filteredBytes,
+        file:
+            filterIndex == 0
+                ? widget.selectedMedia[_currentPage].file
+                : filteredBytes,
         extension: widget.selectedMedia[_currentPage].extension,
       );
     });
@@ -125,9 +137,9 @@ class _MediaEditScreenState extends State<MediaEditScreen> {
                       (value) => setState(() {
                         _currentPage = value;
                       }),
-                  itemCount: widget.selectedMedia.length,
+                  itemCount: modifiedMedia.length,
                   itemBuilder: (context, index) {
-                    final media = widget.selectedMedia[index];
+                    final media = modifiedMedia[index];
                     if (media.type == MediaType.image) {
                       return Image.memory(
                         media.file,
@@ -228,7 +240,7 @@ class _MediaEditScreenState extends State<MediaEditScreen> {
                                     DateTime.now()
                                         .millisecondsSinceEpoch
                                         .toString(),
-                                media: widget.selectedMedia,
+                                media: modifiedMedia,
                                 createdAt: DateTime.now(),
                               ),
                             ),
