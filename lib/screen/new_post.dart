@@ -3,10 +3,7 @@ import 'dart:typed_data';
 
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_insta_clone/bloc/post/post_bloc.dart';
-import 'package:flutter_insta_clone/bloc/post/post_events.dart';
 import 'package:flutter_insta_clone/models/media_model.dart';
-import 'package:flutter_insta_clone/models/post_model.dart';
 import 'package:flutter_insta_clone/screen/post_preview.dart';
 import 'package:flutter_insta_clone/services/permission_service.dart';
 import 'package:flutter_insta_clone/widgets/photo_manager_widget.dart';
