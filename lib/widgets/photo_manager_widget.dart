@@ -3,7 +3,11 @@ import 'package:flutter_insta_clone/widgets/media_thumbnail_widget.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 class PhotoManagerWidget extends StatefulWidget {
-  const PhotoManagerWidget({super.key});
+  final Function(List<AssetEntity>) onSelectionChanged;
+  const PhotoManagerWidget({
+    super.key,
+    required this.onSelectionChanged,
+  });
 
   @override
   State<PhotoManagerWidget> createState() =>
@@ -104,46 +108,6 @@ class _PhotoManagerWidgetState extends State<PhotoManagerWidget> {
     }
   }
 
-  Future<void> get() async {
-    try {
-      final PermissionState ps =
-          await PhotoManager.requestPermissionExtend();
-
-      if (ps.isAuth || ps.hasAccess) {
-        debugPrint('Permission granted or Limited Access');
-
-        final List<AssetPathEntity> paths =
-            await PhotoManager.getAssetPathList(
-              type: RequestType.all,
-            );
-
-        debugPrint(
-          'Fetched Paths Successfully. Count: ${paths.length}',
-        );
-        debugPrint('Fetched Paths Successfully. $paths');
-
-        if (paths.isEmpty) {
-          debugPrint('No Albums found');
-          return;
-        }
-
-        for (final path in paths) {
-          final List<AssetEntity> media = await path
-              .getAssetListPaged(page: 0, size: 100);
-          debugPrint(
-            'Album: ${path.name} | Media Count: ${media.length}',
-          );
-        }
-      } else {
-        debugPrint('Permission Denied. Opening Settings...');
-        await PhotoManager.openSetting();
-      }
-    } catch (e, s) {
-      debugPrint('EXCEPTION OCCURRED -> $e');
-      debugPrint('STACKTRACE -> $s');
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -217,6 +181,7 @@ class _PhotoManagerWidgetState extends State<PhotoManagerWidget> {
                       } else {
                         selectedAssets.add(asset);
                       }
+                      widget.onSelectionChanged(selectedAssets);
                     });
                   },
                 );
